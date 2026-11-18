@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Inventory</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1>Product Inventory Management</h1>
+<h3>Enter Product Details</h3>
+<input id="id" placeholder="Product ID">
+<input id="name" placeholder="Product Name">
+<input id="price" placeholder="Price">
+<input id="category" placeholder="Category">
+
+<button onclick="addProduct()">Add Product</button>
+
+<h3>Product List</h3>
+
+<button onclick="viewProducts()">View Products</button>
+
+<div id="result"></div>
+
+<script>
+
+async function addProduct() {
+
+    let product = {
+        id: document.getElementById("id").value,
+        name: document.getElementById("name").value,
+        price: document.getElementById("price").value,
+        category: document.getElementById("category").value
+    };
+
+    let res = await fetch('/products', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(product)
+    });
+
+    alert(await res.text());
+    viewProducts();
+}
+
+// READ
+async function viewProducts() {
+
+    let res = await fetch('/products');
+    let products = await res.json();
+
+    let output = "<table border='1' cellpadding='10'>";
+    output += "<tr><th>ID</th><th>Name</th><th>Price</th><th>Category</th><th>Action</th></tr>";
+
+    products.forEach(p => {
+        output += `
+        <tr>
+            <td>${p.id}</td>
+            <td>${p.name}</td>
+            <td>${p.price}</td>
+            <td>${p.category}</td>
+            <td>
+                <button onclick="updateProduct('${p.id}')">Update</button>
+                <button onclick="deleteProduct('${p.id}')">Delete</button>
+            </td>
+        </tr>`;
+    });
+
+    output += "</table>";
+    document.getElementById("result").innerHTML = output;
+}
+
+// UPDATE
+async function updateProduct(id) {
+
+    let name = prompt("Enter new name:");
+    let price = prompt("Enter new price:");
+    let category = prompt("Enter new category:");
+
+    if (name === null || price === null || category === null) return;
+
+    let res = await fetch('/products/' + id, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name, price, category})
+    });
+
+    alert(await res.text());
+    viewProducts();
+}
+
+// DELETE
+async function deleteProduct(id) {
+
+    let res = await fetch('/products/' + id, {
+        method: 'DELETE'
+    });
+
+    alert(await res.text());
+    viewProducts();
+}
+
+</script>
+
+</body>
+</html>
